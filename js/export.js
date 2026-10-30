@@ -160,6 +160,11 @@ export async function recordGif(book, play, { quality = 'mid', ratio = '16:9', l
   // 시간 안정화: 마지막으로 갱신했을 때의 원본 색(ref)과 거의 같은 픽셀(그러데이션의 미세한 흔들림)은
   // 이전 색을 그대로 유지(투명) → 배경이 번쩍이지 않음. 차이가 쌓여 커지면 그때 갱신
   const STILL = 12; // RGB 차이 합 기준
+  // 단, 이렇게 붙잡아 둔 픽셀이 실제 색과 계속 다른 색 칸으로 남아 있으면(책·그림자가 지나간 자리)
+  // SETTLE 프레임 연속으로 어긋날 때 한 번 고쳐 그림 → 지나간 흔적이 남지 않음.
+  // 흔들림처럼 프레임마다 왔다 갔다 하는 픽셀은 연속으로 어긋나지 않으니 그대로 유지
+  const SETTLE = 4;
+  const stale = new Uint8Array(W * H);
   let prevIdx = null, ref = null;
   for (let f = 0; f < blobs.length; f++) {
     const data = await frame(blobs[f]);
@@ -176,7 +181,10 @@ export async function recordGif(book, play, { quality = 'mid', ratio = '16:9', l
     const out = idx.slice();
     if (!ref) ref = src;
     else for (let p = 0, i = 0; p < idx.length; p++, i += 4) {
-      if (keep[p] || idx[p] === prevIdx[p]) { out[p] = T; idx[p] = prevIdx[p]; continue; } // 투명 = 이전 그대로
+      const cur = idx[p], shown = prevIdx[p];
+      if (cur === shown) { stale[p] = 0; out[p] = T; continue; } // 투명 = 이전 그대로
+      if (keep[p] && ++stale[p] < SETTLE) { out[p] = T; idx[p] = shown; continue; } // 미세한 흔들림: 잠시 붙잡아 둠
+      stale[p] = 0; // 새 색으로 갱신
       ref[i] = src[i]; ref[i + 1] = src[i + 1]; ref[i + 2] = src[i + 2];
     }
     prevIdx = idx;
