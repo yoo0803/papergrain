@@ -11,7 +11,9 @@
 AI 미사용 · 서버 없음 · 기기 안에서만 처리 · MIT
 No AI · No server · Everything stays on your device · MIT
 
-[영상]
+
+https://github.com/user-attachments/assets/382be4cf-0004-4dd9-89f0-3ce9350b95b0
+
 
 </div>
 
