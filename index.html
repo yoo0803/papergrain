@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; media-src 'self' blob:; connect-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <title>종이결 · Papergrain</title>
+  <meta name="description" content="AI 없이 손쉽게 만드는 디지털 팝업북.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/SUIT-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body class="mode-samples">
+  <main class="stage" id="stage">
+    <div class="vignette" aria-hidden="true"></div>
+
+    <div class="cover-editor" id="coverEditor" hidden>
+      <input id="coverTitle" type="text" maxlength="28" autocomplete="off" spellcheck="false" data-i18n-ph="cover.placeholder" data-i18n-label="cover.placeholder">
+      <button class="btn btn-ghost btn-sm flip-btn" id="flipBtn" data-i18n-label="cover.flip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7.5h10.5l-3-3M16 12.5H5.5l3 3"/></svg></button>
+      <button class="btn btn-primary btn-sm" id="openBtn"><span class="arr" aria-hidden="true">←</span><span data-i18n="cover.open"></span></button>
+    </div>
+
+    <div class="chapter-title" id="chapterTitle" aria-live="polite">
+      <div class="ct-eyebrow"><i></i><span id="ctNum"></span><i></i></div>
+      <div class="ct-title" id="ctTitle"></div>
+      <div class="ct-credit" id="ctCredit"></div>
+    </div>
+
+    <div class="hand" id="hand" hidden aria-hidden="true"><span></span></div>
+    <section class="coach" id="coach" hidden role="dialog" aria-live="polite">
+      <div class="coach-top">
+        <span class="step"><b id="coachStep">1</b> / 5</span>
+        <button class="link" id="coachSkip" data-i18n="tut.skip"></button>
+      </div>
+      <div class="coach-bars" id="coachBars"><i></i><i></i><i></i><i></i><i></i></div>
+      <h2 class="coach-title" id="coachTitle"></h2>
+      <div class="coach-actions"><button class="btn btn-primary btn-sm" id="coachNext"><span data-i18n="tut.next"></span><span class="arr" aria-hidden="true">→</span></button></div>
+    </section>
+
+    <div class="dock" id="dock" hidden>
+      <div class="seg" id="motionSeg" role="radiogroup"></div>
+      <div class="dock-sep" aria-hidden="true"></div>
+      <div class="seg" id="ambSeg" role="radiogroup"></div>
+    </div>
+
+    <button class="btn btn-primary cta" id="ctaStudio"><span data-i18n="cta.studio"></span><span class="arr" aria-hidden="true">→</span></button>
+
+    <aside class="notice" id="notice">
+      <p data-i18n="notice"></p>
+      <button class="link" id="creditsBtn" data-i18n="credits"></button>
+    </aside>
+
+    <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busyText"></span></div>
+  </main>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Papergrain">
+      <img class="brand-mark" src="icon.svg" alt="" width="26" height="26">
+      <span class="brand-name" data-i18n="app.name"></span>
+    </a>
+    <nav class="seg seg-mode" aria-label="mode">
+      <button data-mode="samples" data-i18n="mode.samples"></button>
+      <button data-mode="studio" data-i18n="mode.studio"></button>
+    </nav>
+    <div class="top-right">
+      <a class="icon-btn" id="shareX" target="_blank" rel="noopener noreferrer" data-i18n-label="share.x"><svg viewBox="0 0 20 20"><path d="M4 3h3.6l8.4 14h-3.6z" fill="currentColor" stroke="none"/><path d="M15.5 3 11.2 8.2M8.6 11.6 4.3 17"/></svg></a>
+      <a class="icon-btn" id="githubLink" target="_blank" rel="noopener noreferrer" data-i18n-label="github" hidden><svg viewBox="0 0 20 20"><path fill="currentColor" stroke="none" d="M10 1.8a8.2 8.2 0 0 0-2.6 16c.4.1.6-.2.6-.4v-1.5c-2.3.5-2.8-1-2.8-1-.4-1-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.3.9 1.3.9.7 1.3 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.7-.9-3.7-4.1 0-.9.3-1.6.9-2.2-.1-.2-.4-1.1.1-2.2 0 0 .7-.2 2.3.8a7.9 7.9 0 0 1 4.1 0c1.6-1.1 2.3-.8 2.3-.8.4 1.1.2 2 .1 2.2.5.6.9 1.3.9 2.2 0 3.2-1.9 3.9-3.7 4.1.3.3.6.8.6 1.5v2.3c0 .2.1.5.6.4A8.2 8.2 0 0 0 10 1.8z"/></svg></a>
+      <button class="icon-btn" id="tutorialBtn" data-i18n-label="tutorial.replay"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16"/><path d="M7.6 7.6a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.7-.9 1.3v.4M10 14.4v.1"/></svg></button>
+      <div class="seg seg-lang" aria-label="language"><button data-lang="ko">KO</button><button data-lang="en">EN</button></div>
+      <div class="seg seg-theme" role="group" aria-label="theme">
+        <button data-theme-set="system" data-i18n-label="theme.system"><svg viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="15" height="10"/><path d="M7 17h6M10 13.5V17"/></svg></button>
+        <button data-theme-set="light" data-i18n-label="theme.light"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.5"/><path d="M10 1.5v2M10 16.5v2M1.5 10h2M16.5 10h2M4 4l1.4 1.4M14.6 14.6 16 16M4 16l1.4-1.4M14.6 5.4 16 4"/></svg></button>
+        <button data-theme-set="dark" data-i18n-label="theme.dark"><svg viewBox="0 0 20 20"><path d="M16.5 12.5A7 7 0 0 1 7.5 3.5a7 7 0 1 0 9 9z"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <aside class="panel" id="panel" aria-label="studio">
+    <div class="panel-head"><button class="link" id="panelClose" data-i18n="close"></button></div>
+
+    <section class="block">
+      <h3 data-i18n="studio.cover"></h3>
+      <input class="input" id="bookTitle" type="text" maxlength="28" autocomplete="off" data-i18n-ph="cover.placeholder" data-i18n-label="cover.placeholder">
+      <div class="covers" id="coverList" role="radiogroup"></div>
+      <input id="coverFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+      <div class="swatches" id="themeList" role="radiogroup"></div>
+      <div class="fontpick" id="fontList" role="radiogroup"></div>
+      <label class="slider icon"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16 7.5 5 12 16M4.6 12h5.8M14 16l2.5-6 2.5 6"/></svg><input id="titleScale" type="range" min="0.6" max="1.5" step="0.05" data-i18n-label="studio.size"></label>
+      <div class="seg seg-sm seg-fill" id="bindSeg" role="radiogroup" data-i18n-label="cover.binding"></div>
+      <div id="wrapRow" hidden>
+        <label class="check"><input id="wrapOn" type="checkbox"><span data-i18n="cover.wrap"></span></label>
+        <small class="hint" id="wrapHint"></small>
+      </div>
+      <label class="check"><input id="backOn" type="checkbox"><span data-i18n="cover.backOn"></span></label>
+      <div class="back-fields" id="backFields" hidden>
+        <textarea class="input" id="backBlurb" rows="3" maxlength="300" data-i18n-ph="back.blurb" data-i18n-label="back.blurb"></textarea>
+        <div class="row2">
+          <input class="input" id="backAuthor" type="text" maxlength="40" autocomplete="off" data-i18n-ph="back.author" data-i18n-label="back.author">
+          <input class="input" id="backDate" type="text" maxlength="30" autocomplete="off" data-i18n-ph="back.date" data-i18n-label="back.date">
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h3 data-i18n="studio.chapters"></h3>
+      <div class="chapters" id="chapterList" role="list"></div>
+      <div class="fontpick fontpick-7" id="ctFontList" role="radiogroup" data-i18n-label="studio.ctFont"></div>
+      <div class="row">
+        <button class="btn btn-ghost btn-sm" id="addChapter">＋ <span data-i18n="studio.add"></span></button>
+        <button class="btn btn-ghost btn-sm" id="delChapter" data-i18n="studio.delete"></button>
+      </div>
+      <input class="input" id="chTitle" type="text" maxlength="24" autocomplete="off" data-i18n-ph="studio.chTitle" data-i18n-label="studio.chTitle">
+      <div class="drops">
+        <label class="drop" id="bgDrop"><input id="bgFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden><span class="drop-thumb" id="bgThumb"></span><b data-i18n="studio.bg"></b></label>
+        <label class="drop drop-add" id="charDrop"><input id="charFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden><span class="drop-thumb"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg></span><b data-i18n="studio.charAdd"></b></label>
+      </div>
+      <div class="char-list" id="charList" hidden></div>
+      <div class="char-ctrl" id="charCtrl" hidden>
+        <label class="slider"><span data-i18n="studio.size"></span><input id="chSize" type="range" min="0.15" max="0.9" step="0.01"></label>
+        <label class="check"><input id="removeBg" type="checkbox"><span data-i18n="studio.removeBg"></span></label>
+        <label class="slider" id="tolRow"><span data-i18n="studio.tol"></span><input id="tol" type="range" min="5" max="90" step="1"></label>
+        <button class="link" id="charRemove" data-i18n="studio.charRemove"></button>
+      </div>
+    </section>
+
+    <section class="block">
+      <h3 data-i18n="studio.style"></h3>
+      <div class="chips" id="palettes" role="radiogroup"></div>
+      <label class="slider"><span data-i18n="studio.tint"></span><input id="tint" type="range" min="0" max="1" step="0.05"></label>
+      <label class="slider"><span data-i18n="studio.wash"></span><input id="wash" type="range" min="0" max="1.5" step="0.05"></label>
+      <label class="slider"><span data-i18n="studio.ink"></span><input id="ink" type="range" min="0" max="1" step="0.05"></label>
+      <label class="slider"><span data-i18n="studio.abst"></span><input id="abst" type="range" min="0.5" max="2" step="0.1"></label>
+      <label class="slider"><span data-i18n="studio.layers"></span><input id="layers" type="range" min="2" max="6" step="1"></label>
+      <label class="slider"><span data-i18n="studio.objects"></span><input id="objects" type="range" min="0" max="6" step="1"></label>
+    </section>
+
+    <div class="panel-foot"><button class="btn btn-primary btn-block" id="finishBtn"><span data-i18n="studio.finish"></span><span class="arr" aria-hidden="true">→</span></button></div>
+  </aside>
+  <button class="btn btn-primary panel-fab" id="panelFab" data-i18n="studio.panel"></button>
+
+  <div class="modal" id="endModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+      <h2 id="endTitle" data-i18n="tut.end"></h2>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="endMore" data-i18n="tut.more"></button>
+        <button class="btn btn-primary" id="endMake"><span data-i18n="cta.studio"></span><span class="arr" aria-hidden="true">→</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="finishModal" hidden>
+    <div class="modal-card finish" role="dialog" aria-modal="true" aria-labelledby="finishTitle">
+      <div class="finish-cover" id="finishCover"></div>
+      <div class="finish-body">
+        <h2 id="finishTitle" data-i18n="finish.t"></h2>
+        <div class="opts">
+          <span data-i18n="finish.length"></span><div class="seg seg-sm" id="lenSeg" role="radiogroup"></div>
+          <span data-i18n="finish.quality"></span><div class="seg seg-sm" id="qualSeg" role="radiogroup"></div>
+          <span data-i18n="finish.ratio"></span><div class="seg seg-sm" id="ratioSeg" role="radiogroup"></div>
+          <span></span><small class="size-note" id="sizeNote"></small>
+        </div>
+        <div class="tiles">
+          <button class="tile" id="saveVideo"><svg viewBox="0 0 20 20"><rect x="2" y="4.5" width="11" height="11"/><path d="M13 8.5 18 6v8l-5-2.5"/></svg><span data-i18n="finish.video"></span></button>
+          <button class="tile" id="saveGif"><svg viewBox="0 0 20 20"><rect x="2" y="3" width="16" height="14"/><path d="M5 12l3-3 3 3 2-2 3 3"/></svg><span data-i18n="finish.gif"></span></button>
+        </div>
+        <button class="link" id="finishClose" data-i18n="finish.edit"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="creditsModal" hidden>
+    <div class="modal-card credits-card" role="dialog" aria-modal="true" aria-labelledby="creditsTitle">
+      <div class="credits-head"><h2 id="creditsTitle" data-i18n="credits"></h2><button class="link" id="creditsClose" data-i18n="close"></button></div>
+      <dl class="credits" id="creditsList"></dl>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript">JavaScript required.</p></noscript>
+</body>
+</html>
